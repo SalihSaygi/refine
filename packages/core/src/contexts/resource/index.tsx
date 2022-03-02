@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { IResourceContext } from "./IResourceContext";
 
@@ -16,8 +16,9 @@ export const ResourceContextProvider: React.FC<IResourceContext> = ({
     resources,
     children,
 }) => {
+    const [resourcesD, setResourcesD] = useState(resources);
     return (
-        <ResourceContext.Provider value={{ resources }}>
+        <ResourceContext.Provider value={{ resourcesD, setResourcesD }}>
             {children}
         </ResourceContext.Provider>
     );
