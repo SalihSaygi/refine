@@ -12,7 +12,11 @@ import {
 } from "@pankod/refine-core";
 
 export type RefreshButtonProps = ButtonProps & {
+    /**
+     * @deprecated resourceName deprecated. Use resourceNameOrRouteName instead # https://github.com/pankod/refine/issues/1618
+     */
     resourceName?: string;
+    resourceNameOrRouteName?: string;
     recordItemId?: BaseKey;
     hideText?: boolean;
     metaData?: MetaDataQuery;
@@ -27,11 +31,13 @@ export type RefreshButtonProps = ButtonProps & {
  */
 export const RefreshButton: React.FC<RefreshButtonProps> = ({
     resourceName: propResourceName,
+    resourceNameOrRouteName: propResourceNameOrRouteName,
     recordItemId,
     hideText = false,
     metaData,
     dataProviderName,
     children,
+    onClick,
     ...rest
 }) => {
     const translate = useTranslate();
@@ -42,14 +48,16 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
     const { resource: routeResourceName, id: idFromRoute } =
         useParams<ResourceRouterParams>();
 
-    const resourceName = propResourceName ?? routeResourceName;
+    const resource = resourceWithRoute(
+        propResourceNameOrRouteName ?? routeResourceName,
+    );
 
-    const resource = resourceWithRoute(resourceName);
+    const resourceName = propResourceName ?? resource.name;
 
     const id = recordItemId ?? idFromRoute;
 
     const { refetch, isFetching } = useOne({
-        resource: resource.name,
+        resource: resourceName,
         id,
         queryOptions: {
             enabled: false,
@@ -61,8 +69,8 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
 
     return (
         <Button
+            onClick={(e) => (onClick ? onClick(e) : refetch())}
             icon={<RedoOutlined spin={isFetching} />}
-            onClick={() => refetch()}
             {...rest}
         >
             {!hideText && (children ?? translate("buttons.refresh", "Refresh"))}

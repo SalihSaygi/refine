@@ -306,6 +306,7 @@ module.exports = {
                     type: "category",
                     label: "Data Provider",
                     items: [
+                        "guides-and-concepts/data-provider/handling-filters",
                         "guides-and-concepts/data-provider/graphql",
                         "guides-and-concepts/data-provider/strapi-v4",
                         "guides-and-concepts/data-provider/appwrite",
@@ -388,6 +389,7 @@ module.exports = {
                         "examples/data-provider/supabase",
                         "examples/data-provider/altogic",
                         "examples/data-provider/multiple",
+                        "examples/data-provider/directus",
                     ],
                 },
                 {

@@ -12,7 +12,11 @@ import {
 } from "@pankod/refine-core";
 
 export type ListButtonProps = ButtonProps & {
+    /**
+     * @deprecated resourceName deprecated. Use resourceNameOrRouteName instead # https://github.com/pankod/refine/issues/1618
+     */
     resourceName?: string;
+    resourceNameOrRouteName?: string;
     hideText?: boolean;
     ignoreAccessControlProvider?: boolean;
 };
@@ -26,9 +30,11 @@ export type ListButtonProps = ButtonProps & {
  */
 export const ListButton: React.FC<ListButtonProps> = ({
     resourceName: propResourceName,
+    resourceNameOrRouteName: propResourceNameOrRouteName,
     hideText = false,
     ignoreAccessControlProvider = false,
     children,
+    onClick,
     ...rest
 }) => {
     const resourceWithRoute = useResourceWithRoute();
@@ -40,10 +46,13 @@ export const ListButton: React.FC<ListButtonProps> = ({
 
     const { resource: routeResourceName } = useParams<ResourceRouterParams>();
 
-    const resource = resourceWithRoute(routeResourceName);
+    const resource = resourceWithRoute(
+        propResourceNameOrRouteName ?? routeResourceName,
+    );
 
     const resourceName = propResourceName ?? resource.name;
 
+    console.log("resourceName", propResourceName, resource, resourceName);
     const { data } = useCan({
         resource: resourceName,
         action: "list",
@@ -64,7 +73,11 @@ export const ListButton: React.FC<ListButtonProps> = ({
 
     return (
         <Button
-            onClick={(): void => list(resourceName, "push")}
+            onClick={(e): void =>
+                onClick
+                    ? onClick(e)
+                    : list(propResourceName ?? resource.route, "push")
+            }
             icon={<BarsOutlined />}
             disabled={data?.can === false}
             title={createButtonDisabledTitle()}

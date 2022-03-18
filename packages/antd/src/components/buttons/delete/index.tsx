@@ -13,11 +13,15 @@ import {
     SuccessErrorNotification,
     MetaDataQuery,
     BaseKey,
+    DeleteOneResponse,
 } from "@pankod/refine-core";
-import { DeleteOneResponse } from "@pankod/refine-core/dist/interfaces";
 
 export type DeleteButtonProps = ButtonProps & {
+    /**
+     * @deprecated resourceName deprecated. Use resourceNameOrRouteName instead # https://github.com/pankod/refine/issues/1618
+     */
     resourceName?: string;
+    resourceNameOrRouteName?: string;
     recordItemId?: BaseKey;
     onSuccess?: (value: DeleteOneResponse) => void;
     mutationMode?: MutationMode;
@@ -25,6 +29,9 @@ export type DeleteButtonProps = ButtonProps & {
     metaData?: MetaDataQuery;
     dataProviderName?: string;
     ignoreAccessControlProvider?: boolean;
+    confirmTitle?: string;
+    confirmOkText?: string;
+    confirmCancelText?: string;
 } & SuccessErrorNotification;
 
 /**
@@ -35,6 +42,7 @@ export type DeleteButtonProps = ButtonProps & {
  */
 export const DeleteButton: React.FC<DeleteButtonProps> = ({
     resourceName: propResourceName,
+    resourceNameOrRouteName: propResourceNameOrRouteName,
     recordItemId,
     onSuccess,
     mutationMode: mutationModeProp,
@@ -45,6 +53,9 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
     ignoreAccessControlProvider = false,
     metaData,
     dataProviderName,
+    confirmTitle,
+    confirmOkText,
+    confirmCancelText,
     ...rest
 }) => {
     const resourceWithRoute = useResourceWithRoute();
@@ -60,16 +71,17 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
     const { resource: routeResourceName, id: idFromRoute } =
         useParams<ResourceRouterParams>();
 
-    const resourceName = propResourceName ?? routeResourceName;
-
-    const resource = resourceWithRoute(resourceName);
+    const resource = resourceWithRoute(
+        propResourceNameOrRouteName ?? routeResourceName,
+    );
+    const resourceName = propResourceName ?? resource.name;
 
     const { mutate, isLoading, variables } = useDelete();
 
     const id = recordItemId ?? idFromRoute;
 
     const { data } = useCan({
-        resource: resource.name,
+        resource: resourceName,
         action: "delete",
         params: { id },
         queryOptions: {
@@ -80,16 +92,20 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
     return (
         <Popconfirm
             key="delete"
-            okText={translate("buttons.delete", "Delete")}
-            cancelText={translate("buttons.cancel", "Cancel")}
+            okText={confirmOkText ?? translate("buttons.delete", "Delete")}
+            cancelText={
+                confirmCancelText ?? translate("buttons.cancel", "Cancel")
+            }
             okType="danger"
-            title={translate("buttons.confirm", "Are you sure?")}
+            title={
+                confirmTitle ?? translate("buttons.confirm", "Are you sure?")
+            }
             okButtonProps={{ disabled: isLoading }}
             onConfirm={(): void => {
                 mutate(
                     {
                         id: id!,
-                        resource: resource.name,
+                        resource: resourceName,
                         mutationMode,
                         successNotification,
                         errorNotification,
